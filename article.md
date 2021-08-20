@@ -118,4 +118,4 @@ plt.scatter(centers[ : , 0], centers[ : , 1], c='red', s=100, alpha=0.5)
 
 ![image4](./images/image4.png)
 
-What happened??? ...
+What happened??? Well, there are a few issues to be aware of when using the expectation-maximization approach. One of them is that the globally optimal result may not be achieved. Although the E–M procedure is guaranteed to improve the result in each step, there is no assurance that this will lead to the globally optimal result. This is why, better implementations, such as the one from Scikit-Learn, by default run the algorithm for multiple starting guesses. (In Scikit-Learn this is controlled by the **n_init** parameter, which defaults to 10)
