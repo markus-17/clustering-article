@@ -42,9 +42,9 @@ from sklearn.cluster import KMeans
 
 kmeans = KMeans(n_clusters=3)
 kmeans.fit(X)
-id = kmeans.predict(X)
+ids = kmeans.predict(X)
 
-plt.scatter(X[ : , 0], X[ : , 1], c=id, s=15, cmap='viridis')
+plt.scatter(X[ : , 0], X[ : , 1], c=ids, s=15, cmap='viridis')
 centers = kmeans.cluster_centers_
 plt.scatter(centers[ : , 0], centers[ : , 1], c='red', s=100, alpha=0.5)
 ```
@@ -58,8 +58,64 @@ How does the algorithm work? **KMeans** uses an iterative approach known as *exp
 1. Randomly guess some cluster centers
 2. Repeat until converged
     <ol type='a'>
-        <li><i>E-Step<i>: assign points to the nearest cluster center</li>
-        <li><i>M-Step<i>: set the cluster centers to the mean</li>
+        <li><i>E-Step</i>: assign points to the nearest cluster center</li>
+        <li><i>M-Step</i>: set the cluster centers to the mean</li>
     </ol>
 
 The **KMeans** algorithm is simple enough for us to write a really basic implementation of it in just a few lines of code.
+
+```py
+# This function has the following 
+# Signature: pairwise_distances_argmin(X, Y, axis=1, metric='euclidean', metric_kwargs=None)
+# This function computes for each row in X, the index of the row of Y which
+# is closest (according to the specified distance).
+from sklearn.metrics import pairwise_distances_argmin
+import numpy as np
+
+def find_clusters(X, n_clusters, rseed=69):
+    # Randomly guess some cluster centers
+    rng = np.random.RandomState(rseed)
+    i = rng.permutation(X.shape[0])[ : n_clusters]
+    centers = X[i]
+    
+    while True:
+        # E-Step: Assign labels based on closest center
+        labels = pairwise_distances_argmin(X, centers)
+        
+        # M-Step: Find new centers from means of points
+        new_centers = np.array([
+            X[labels == i].mean(0) for i in range(n_clusters)
+        ])
+        
+        # Check for convergence
+        if np.all(centers == new_centers): 
+            break
+        
+        centers = new_centers
+        
+    return centers, labels
+```
+
+Well tested implementations, such as the one from scikit-learn, do a few more things under the hood, but this trivial implementation allows us to view one caveat of expectation-maximization.
+
+Let's test this implementation on our sample dataset.
+
+```py
+centers, labels = find_clusters(X, 3)
+plt.scatter(X[:, 0], X[:, 1], c=labels, s=15, cmap='viridis')
+plt.scatter(centers[ : , 0], centers[ : , 1], c='red', s=100, alpha=0.5)
+```
+
+![image3](./images/image3.png)
+
+Everything seems to be ok, right? Now, let's try and change the random seed.
+
+```py
+centers, labels = find_clusters(X, 3, rseed=5)
+plt.scatter(X[:, 0], X[:, 1], c=labels, s=15, cmap='viridis')
+plt.scatter(centers[ : , 0], centers[ : , 1], c='red', s=100, alpha=0.5)
+```
+
+![image4](./images/image4.png)
+
+What happened??? ...
