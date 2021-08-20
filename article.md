@@ -147,3 +147,18 @@ plt.scatter(X[:, 0], X[:, 1], c=labels, s=15, cmap='viridis')
 
 <!-- k-means can be slow for large numbers of samples -->
 <!-- k-means is limited to linear cluster boundaries -->
+
+Other problems that you might have to deal with when using the **KMeans** algorithm are
+* **KMeans** might be slow for large number of samples. Because each iteration of the **KMeans** algorithm must access every point in the dataset, the algorithm might become relatively slow as the number of samples grows. Some sort of fix for this issue might be using just a subset of the data to update the cluster centers at each step.
+* The number of clusters must be selected beforehand. This is a common challenge because **KMeans** cannot learn the number of clusters from the data. For example, we can ask the algorithm to identify 4 clusters from our previous sample dataset and it will proceed without a second thought.
+
+```py
+labels = KMeans(4, random_state=420).fit_predict(X)
+plt.scatter(X[:, 0], X[:, 1], c=labels, s=15, cmap='viridis')
+```
+
+![image7](./images/image7.png)
+
+Whether this is a meaningful result or not is a question that might depend on the context. Some well known approaches that might help when picking the right number of clusters are the **elbow method** (a heuristic approach that we won't discuss in this article) and the **Silhouette Score** about which we will continue the discussion.
+
+# Silhouette Score
