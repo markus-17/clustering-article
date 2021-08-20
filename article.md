@@ -119,3 +119,31 @@ plt.scatter(centers[ : , 0], centers[ : , 1], c='red', s=100, alpha=0.5)
 ![image4](./images/image4.png)
 
 What happened??? Well, there are a few issues to be aware of when using the expectation-maximization approach. One of them is that the globally optimal result may not be achieved. Although the E–M procedure is guaranteed to improve the result in each step, there is no assurance that this will lead to the globally optimal result. This is why, better implementations, such as the one from Scikit-Learn, by default run the algorithm for multiple starting guesses. (In Scikit-Learn this is controlled by the **n_init** parameter, which defaults to 10)
+
+<!-- k-means is limited to linear cluster boundaries... -->
+Another caveat of the **KMeans** algorithm is that it is limited to linear cluster boundaries. The fundamental assumption that points will be closer to their own cluster center than to others means that the algorithm will often be ineffective when dealing with clusters that have complicated geometries. Consider the following example, along with the results found by the typical **KMeans** approach. 
+
+```py
+from sklearn.datasets import make_moons
+
+X, _ = make_moons(500, noise=.06, random_state=69)
+labels = KMeans(2, random_state=69).fit_predict(X)
+plt.scatter(X[:, 0], X[:, 1], c=labels, s=15, cmap='viridis')
+```
+
+![image5](./images/image5.png)
+
+Fortunately, this issue is easily solved using one version of kernelized **KMeans** that is implemented in Scikit-Learn within the **SpectralClustering** estimator.
+
+```py
+from sklearn.cluster import SpectralClustering
+
+model = SpectralClustering(n_clusters=2, affinity='nearest_neighbors', assign_labels='kmeans')
+labels = model.fit_predict(X)
+plt.scatter(X[:, 0], X[:, 1], c=labels, s=15, cmap='viridis')
+```
+
+![image6](./images/image6.png)
+
+<!-- k-means can be slow for large numbers of samples -->
+<!-- k-means is limited to linear cluster boundaries -->
