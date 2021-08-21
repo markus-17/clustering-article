@@ -162,3 +162,72 @@ plt.scatter(X[:, 0], X[:, 1], c=labels, s=15, cmap='viridis')
 Whether this is a meaningful result or not is a question that might depend on the context. Some well known approaches that might help when picking the right number of clusters are the **elbow method** (a heuristic approach that we won't discuss in this article) and the **Silhouette Score** about which we will continue the discussion.
 
 # Silhouette Score
+
+**Silhouette analysis** can be used to study the separation distance between the resulting clusters. The silhouette plot displays a measure of how close each point in one cluster is to points in the neighboring clusters and thus provides a way to assess parameters like number of clusters visually. This measure has a range of [-1, 1].
+
+**Silhouette coefficients** (as these values are referred to as) near +1 indicate that the sample is far away from the neighboring clusters. A value of 0 indicates that the sample is on or very close to the decision boundary between two neighboring clusters and negative values indicate that those samples might have been assigned to the wrong cluster.
+
+**The Silhouette Coefficient** is calculated using the mean intra-cluster distance (a) and the mean nearest-cluster distance (b) for each sample. **The Silhouette Coefficient** for a sample is (b - a) / max(a, b). To clarify, b is the distance between a sample and the nearest cluster that the sample is not a part of. Note that Silhouette Coefficient is only defined if number of labels is 2 <= n_labels <= n_samples - 1.
+
+In scikit-learn there is **sklearn.metrics.silhouette_score** that is used to compute the **mean Silhouette Coefficient** of all samples and there also is **sklearn.metrics.silhouette_samples** that computes the **Silhouette Coefficient** for each sample.
+
+Now let's put the newly acquired knowledge in practice and write a function that shows the **Silhouette Plot** for a certain number of clusters.
+
+```py
+from sklearn.metrics import silhouette_score, silhouette_samples
+import matplotlib.cm as cm
+
+def draw_silhouette_plot(n_clusters):
+    clusterer = KMeans(n_clusters=n_clusters, random_state=69)
+    cluster_labels = clusterer.fit_predict(X)
+
+    silhouette_avg = silhouette_score(X, cluster_labels)
+    # Compute the silhouette scores for each sample
+    sample_silhouette_values = silhouette_samples(X, cluster_labels)
+
+    # The Silhouette Score ranges from -1 to 1
+    plt.xlim([-1, 1])
+    # The (n_clusters + 1) * 10 is for inserting blank space between silhouette
+    # plots of individual clusters, to demarcate them clearly.
+    plt.ylim([0, len(X) + (n_clusters + 1) * 10])
+    plt.yticks([]) # Clear the yaxis labels
+    plt.xticks([-1, -0.8, -0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6, 0.8, 1])
+
+    y_lower = 10
+    for i in range(n_clusters):
+        ith_cluster_silhouette_values = sample_silhouette_values[
+            cluster_labels == i
+        ]
+        ith_cluster_silhouette_values.sort()
+        size_cluster_i = ith_cluster_silhouette_values.shape[0]
+        y_upper = y_lower + size_cluster_i
+
+        color = cm.nipy_spectral(float(i) / n_clusters)
+        plt.fill_betweenx(np.arange(y_lower, y_upper),
+                            0, ith_cluster_silhouette_values,
+                            facecolor=color, edgecolor=color, alpha=0.7)
+
+        # Compute the new y_lower for next plot
+        y_lower = y_upper + 10  # 10 for the 0 samples
+
+    # The vertical line for the average silhouette score of all the values
+    plt.axvline(x=silhouette_avg, color="red", linestyle="--")
+    plt.title(f'The Silhouette Plot for n_clusters = {n_clusters}')
+    plt.legend(
+        [ 'Silhouette Score' ] + [f'Cluster {i}' for i in range(n_clusters)]
+    )
+
+
+draw_silhouette_plot(int(input('Enter the number of clusters: ')))
+```
+
+![image11](./images/image11.png)
+![image8](./images/image8.png)
+![image9](./images/image9.png)
+![image10](./images/image10.png)
+
+
+As you can see the best number of clusters judging by the **average Silhouette Score** is 3. Furthermore, these plots provide more valuable information than you might expect. They provide information about the size of each cluster relative to other clusters and they also provide information about the approximate **Silhouette Coefficient** for each sample in the cluster.
+
+
+# Marketing Segmentation
