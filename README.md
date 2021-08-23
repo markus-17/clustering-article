@@ -231,3 +231,75 @@ As you can see the best number of clusters judging by the **average Silhouette S
 
 
 # Marketing Segmentation
+
+In the context of **Marketing Segmentation**, also known as **Customer Segmentation**, **Cluster Analysis** involves the use of a mathematical model to discover groups of similar customers based on finding the smallest variations among customers within each group. These homogeneous groups are known as **customer archetypes** or **personas**.
+
+For the following example, we will use some data from the [kaggle](https://www.kaggle.com) website.
+
+The CSV file can be downloaded from [here](https://www.kaggle.com/vjchoudhary7/customer-segmentation-tutorial-in-python) or by using the kaggle CLI with the following command
+
+```bash
+kaggle datasets download --unzip -d vjchoudhary7/customer-segmentation-tutorial-in-python
+```
+
+First of all, let's import the data using **pandas.read_csv** and do a little preprocessing.
+
+```py
+import pandas as pd
+from sklearn import preprocessing
+
+df = pd.read_csv('Mall_Customers.csv')
+df.drop('CustomerID', axis=1, inplace=True)
+
+df.loc[df['Gender'] == 'Male', 'Gender'] = 0
+df.loc[df['Gender'] == 'Female', 'Gender'] = 1
+
+column_names = df.columns
+# Standardize features by removing the mean and scaling to unit variance
+scaler = preprocessing.StandardScaler()
+X = scaler.fit_transform(df)
+```
+
+Note that we standardize the data before applying the clustering algorithm. This is a good practice and although sometimes this step is not required, it rarely hurts to do it.
+
+Now, let's use the function that we defined previously in order to perform **Silhouette Analysis** and find the best number of clusters.
+
+```py
+from pylab import figure
+for i, k in enumerate([2, 3, 4]):
+    figure(i)
+    draw_silhouette_plot(X, k)
+```
+
+![image12](./images/image12.png)
+![image13](./images/image13.png)
+![image14](./images/image14.png)
+
+Based on these plots, the best number of clusters seems to be 4 because
+* it has the biggest **Silhouette Score**
+* the clusters are relatively of equal sizes
+* it does not have samples with negative **Silhouette Coefficients**
+
+Now, let's go a step further and see what the cluster centers look like for each of the clusters and see if we can divide the customers from this dataset into distinct **customer archetypes**.
+
+```py
+kmeans = KMeans(n_clusters=4, random_state=69).fit(X)
+
+# Reverse the Standard Scaling we did earlier
+centers = scaler.inverse_transform(kmeans.cluster_centers_)
+
+# View the cluster centers as a pandas table
+pd.DataFrame(
+    data=centers,
+    index=[ f'K{i}' for i in range(1, centers.shape[0] + 1) ],
+    columns=column_names
+)
+```
+
+![table](./images/table.png)
+
+So, based on the cluster centers we can define 4 **customer archetypes**
+* Younger Males with High Spending Score
+* Older Males with Low Spending Score
+* Younger Females with High Spending Score
+* Older Females with Low Spending Score
