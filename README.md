@@ -177,7 +177,7 @@ Now let's put the newly acquired knowledge in practice and write a function that
 from sklearn.metrics import silhouette_score, silhouette_samples
 import matplotlib.cm as cm
 
-def draw_silhouette_plot(n_clusters):
+def draw_silhouette_plot(X, n_clusters):
     clusterer = KMeans(n_clusters=n_clusters, random_state=69)
     cluster_labels = clusterer.fit_predict(X)
 
@@ -218,7 +218,7 @@ def draw_silhouette_plot(n_clusters):
     )
 
 
-draw_silhouette_plot(int(input('Enter the number of clusters: ')))
+draw_silhouette_plot(X, int(input('Enter the number of clusters: ')))
 ```
 
 ![image11](./images/image11.png)
